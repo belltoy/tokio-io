@@ -95,6 +95,19 @@ impl<T, U> Framed<T, U> {
 	    let (inner, writebuf) = inner.into_parts();
         FramedParts { inner: inner.0, readbuf: readbuf, writebuf: writebuf }
     }
+
+    /// Consumes the `Frame`, return its underlying I/O stream, the buffer with
+    /// unprocessed data, and the codec.
+    ///
+    /// Note that care should be taken to not tamper with the underlying stream
+    /// of data coming in as it may corrupt the stream of frames otherwise
+    /// being worked with.
+    pub fn into_parts_and_codec(self) -> (FramedParts<T>, U) {
+        let (inner, readbuf) = self.inner.into_parts();
+        let (inner, writebuf) = inner.into_parts();
+        let parts = FramedParts { inner: inner.0, readbuf: readbuf, writebuf: writebuf };
+        (parts, inner.1)
+    }
 }
 
 impl<T, U> Stream for Framed<T, U>
